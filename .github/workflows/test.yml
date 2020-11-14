@@ -9,6 +9,8 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
+      - run: |
+          which java
       - uses: kabir/play-action@master
         with:
           name: Kabir
