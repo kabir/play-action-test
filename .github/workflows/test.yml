@@ -16,7 +16,7 @@ jobs:
           which java
       - uses: kabir/play-action/child@master
         with:
-          name: Kabir
+          #name: Kabir
           age: 49
           town: London
       - uses: kabir/play-action@master
