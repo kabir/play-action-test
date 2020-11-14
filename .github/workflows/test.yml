@@ -6,6 +6,9 @@ jobs:
     name: Sample Job
     runs-on: [ubuntu-latest]
     steps:
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
       - uses: kabir/play-action@master
         with:
           name: Kabir
