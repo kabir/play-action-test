@@ -14,6 +14,11 @@ jobs:
           java-version: 11
       - run: |
           which java
+      - uses: kabir/play-action/child@master
+        with:
+          name: Kabir
+          age: 49
+          town: London
       - uses: kabir/play-action@master
         with:
           name: Kabir
