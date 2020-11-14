@@ -1,0 +1,13 @@
+name: Try Action
+on:
+  push:
+jobs:
+  sample-job:
+    name: Sample Job
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: kabir/play-action@master
+        with:
+          name: Kabir
+          age: 49
+          town: London
