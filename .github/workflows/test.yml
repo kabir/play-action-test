@@ -24,5 +24,4 @@ jobs:
 #           town: London
      - uses: kabir/play-action/temp-generator@master
        with:
-         name: "${MY_NAME}"
-         age: 49
+         token: "${{secrets.OB_MULTI_CI_PAT}}"
