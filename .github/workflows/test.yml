@@ -21,7 +21,7 @@ jobs:
 #           name: "${MY_NAME}"
 #           age: 49
 #           town: London
-      - uses: kabir/play-action/temp-generator@master
-        with:
-          name: "${MY_NAME}"
-          age: 49
+     - uses: kabir/play-action/temp-generator@master
+       with:
+         name: "${MY_NAME}"
+         age: 49
