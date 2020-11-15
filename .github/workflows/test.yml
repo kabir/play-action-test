@@ -18,8 +18,12 @@ jobs:
           java-version: 11
       - run: |
           which java
-      - uses: kabir/play-action@master
+#       - uses: kabir/play-action@master
+#         with:
+#           name: "${MY_NAME}"
+#           age: 49
+#           town: London
+      - uses: kabir/play-action/temp-generator@master
         with:
           name: "${MY_NAME}"
           age: 49
-          town: London
