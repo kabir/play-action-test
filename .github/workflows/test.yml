@@ -10,14 +10,12 @@ jobs:
     name: Sample Job
     runs-on: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
-        with:
-          java-version: 11
-      - uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - run: |
-          which java
+#      - uses: actions/checkout@v2
+#       - uses: actions/setup-java@v1
+#         with:
+#           java-version: 11
+#       - run: |
+#           which java
 #       - uses: kabir/play-action@master
 #         with:
 #           name: "${MY_NAME}"
