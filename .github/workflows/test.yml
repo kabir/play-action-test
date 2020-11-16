@@ -1,6 +1,6 @@
 name: Try Action
 on:
-  push:
+  #push:
   issues:
 env:
   MY_WORKFLOW_VAR: My Variable
