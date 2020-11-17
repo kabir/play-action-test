@@ -12,8 +12,8 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
      - uses: actions/checkout@v2
-#        with:
-#          token: ${{secrets.OB_MULTI_CI_PAT}}
+       with:
+         token: ${{secrets.OB_MULTI_CI_PAT}}
 
 #       - uses: actions/setup-java@v1
 #         with:
