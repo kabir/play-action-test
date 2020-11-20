@@ -9,13 +9,13 @@ jobs:
   cancel-previous-runs:
     runs-on: ubuntu-latest
     steps:
+    - run: echo hello!!
 #    - uses: actions/checkout@v2
 #      with:
 #        ref: ci-branch-1
 #    - uses: n1hility/cancel-previous-runs@v2
 #      with:
 #        token: ${{ secrets.GITHUB_TOKEN }}
-    - run: echo hello!
   xnio-build:
     name: xnio
     runs-on:
@@ -51,15 +51,16 @@ jobs:
         custom: 0
     - name: Build with Maven
       run: 'mvn -B install -DskipTests '
-    - name: Tarring snapshots from this build into .snapshots.tgz
-      run: cd ~/.m2/repository && find  -type d  -name '*-SNAPSHOT' -exec tar cfzv
-        ${GITHUB_WORKSPACE}/.snapshots.tgz {} +
+    - name: Mount ~/.m2/repository to .m2-repo-mount since the actions can't access
+        ~/.m2 directly
+      run: mkdir .m2-repo-mount && sudo mount --rbind ~/.m2/repository/ .m2-repo-mount
     - uses: kabir/play-action/temp-post-build@master
       with:
         build: 1
         custom: 0
         component: xnio
-        snapshots: .snapshots.tgz
+    - name: Unmount .m2-repo-mount
+      run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
     - name: Run multi-repo-ci-tool 'copy-logs' command
       if: ${{ failure() }}
       run: |
@@ -72,7 +73,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201119-210646
+        name: xnio_and_remoting-logs-20201120-121703
         path: .project-build-logs
   jboss-remoting-build:
     name: jboss-remoting
@@ -104,27 +105,23 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: '11'
+    - name: Mount ~/.m2/repository to .m2-repo-mount since the actions can't access
+        ~/.m2 directly
+      run: mkdir .m2-repo-mount && sudo mount --rbind ~/.m2/repository/ .m2-repo-mount
     - id: pre-build
       uses: kabir/play-action/temp-pre-build@master
       with:
         build: 1
         custom: 0
-    - name: Overlaying downloaded snapshots onto ~/.m2/repository
-      env:
-        TAR_NAME: ${{steps.pre-build.outputs.snapshots-tar}}
-      run: cd ~/.m2/repository && mv ${GITHUB_WORKSPACE}/${TAR_NAME} . && tar xfzv
-        ${TAR_NAME}
     - name: Build with Maven
       run: mvn -B install -DskipTests -Dxnio.version=${OB_VERSION_XNIO}
-    - name: Tarring snapshots from this build into .snapshots.tgz
-      run: cd ~/.m2/repository && find  -type d  -name '*-SNAPSHOT' -exec tar cfzv
-        ${GITHUB_WORKSPACE}/.snapshots.tgz {} +
     - uses: kabir/play-action/temp-post-build@master
       with:
         build: 1
         custom: 0
         component: jboss-remoting
-        snapshots: .snapshots.tgz
+    - name: Unmount .m2-repo-mount
+      run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
     - name: Run multi-repo-ci-tool 'copy-logs' command
       if: ${{ failure() }}
       run: |
@@ -137,491 +134,5 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201119-210646
+        name: xnio_and_remoting-logs-20201120-121703
         path: .project-build-logs
-  wildfly-core-build:
-    name: wildfly-core-build
-    runs-on:
-    - ubuntu-latest
-    env:
-      OB_VERSION_XNIO: ${{ needs.xnio-build.outputs.version_xnio}}
-      OB_VERSION_JBOSS_REMOTING: ${{ needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
-      MAVEN_SMOKE_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae
-      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae -DallTests
-      MAVEN_BUILD_EXTRA_PARAMS: -DlegacyBuild -DlegacyRelease -DskipTests
-      OB_ARTIFACTS_DIR: .ci-tools/artifacts
-      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
-      OB_MAVEN_DEPENDENCY_VERSIONS: -Dversion.org.jboss.xnio=${{needs.xnio-build.outputs.version_xnio}}
-        -Dversion.org.jboss.remoting=${{needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    outputs:
-      version_wildfly_core: ${{steps.pre-build.outputs.version}}
-      git-sha: ${{steps.pre-build.outputs.git-sha}}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        repository: wildfly/wildfly-core
-        ref: master
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-        path: .ci-tools
-    - uses: actions/cache@v1
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-maven-
-    - uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-    - id: pre-build
-      uses: kabir/play-action/temp-pre-build@master
-      with:
-        build: 1
-        custom: 1
-    - name: Overlaying downloaded snapshots onto ~/.m2/repository
-      env:
-        TAR_NAME: ${{steps.pre-build.outputs.snapshots-tar}}
-      run: cd ~/.m2/repository && mv ${GITHUB_WORKSPACE}/${TAR_NAME} . && tar xfzv
-        ${TAR_NAME}
-    - name: Maven Build
-      run: |
-        mvn -B install ${MAVEN_TEST_PARAMS} ${MAVEN_BUILD_EXTRA_PARAMS} -Dversion.org.jboss.xnio=${OB_VERSION_XNIO} -Dversion.org.jboss.remoting=${OB_VERSION_JBOSS_REMOTING}
-        echo "build done!"
-    - name: Tarring snapshots from this build into .snapshots.tgz
-      run: cd ~/.m2/repository && find  -type d  -name '*-SNAPSHOT' -exec tar cfzv
-        ${GITHUB_WORKSPACE}/.snapshots.tgz {} +
-    - uses: kabir/play-action/temp-post-build@master
-      with:
-        build: 1
-        custom: 1
-        component: wildfly-core
-        snapshots: .snapshots.tgz
-    - name: Run multi-repo-ci-tool 'copy-logs' command
-      if: ${{ failure() }}
-      run: |
-        java -jar .ci-tools/multi-repo-ci-tool.jar copy-logs . .project-build-logs/wildfly-core-build
-    - if: ${{ failure() }}
-      run: |
-        cd .project-build-logs
-        zip -r wildfly-core-build.zip wildfly-core-build
-        rm -rf wildfly-core-build
-    - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-      with:
-        name: xnio_and_remoting-logs-20201119-210646
-        path: .project-build-logs
-  wildfly-core-ts-smoke:
-    name: wildfly-core-ts-smoke
-    runs-on:
-    - ubuntu-latest
-    env:
-      OB_VERSION_XNIO: ${{ needs.xnio-build.outputs.version_xnio}}
-      OB_VERSION_JBOSS_REMOTING: ${{ needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-      OB_VERSION_WILDFLY_CORE: ${{ needs.wildfly-core-build.outputs.version_wildfly_core}}
-      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
-      MAVEN_SMOKE_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae
-      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae -DallTests
-      OB_ARTIFACTS_DIR: .ci-tools/artifacts
-      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
-      OB_PROJECT_VERSION: ${{ needs.wildfly-core-build.outputs.version_wildfly_core
-        }}
-      OB_MAVEN_DEPENDENCY_VERSIONS: -Dversion.org.jboss.xnio=${{needs.xnio-build.outputs.version_xnio}}
-        -Dversion.org.jboss.remoting=${{needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-    needs:
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        repository: wildfly/wildfly-core
-        ref: master
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-        path: .ci-tools
-    - uses: actions/cache@v1
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-maven-
-    - uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-    - id: pre-build
-      uses: kabir/play-action/temp-pre-build@master
-      with:
-        build: 0
-        custom: 1
-    - name: Overlaying downloaded snapshots onto ~/.m2/repository
-      env:
-        TAR_NAME: ${{steps.pre-build.outputs.snapshots-tar}}
-      run: cd ~/.m2/repository && mv ${GITHUB_WORKSPACE}/${TAR_NAME} . && tar xfzv
-        ${TAR_NAME}
-    - name: Maven Build
-      run: |
-        mvn -B package ${MAVEN_SMOKE_TEST_PARAMS} -Dversion.org.jboss.xnio=${OB_VERSION_XNIO} -Dversion.org.jboss.remoting=${OB_VERSION_JBOSS_REMOTING}
-    - uses: kabir/play-action/temp-post-build@master
-      with:
-        build: 0
-        custom: 1
-        component: wildfly-core
-        snapshots: .snapshots.tgz
-    - name: Run multi-repo-ci-tool 'copy-logs' command
-      if: ${{ failure() }}
-      run: |
-        java -jar .ci-tools/multi-repo-ci-tool.jar copy-logs . .project-build-logs/wildfly-core-ts-smoke
-    - if: ${{ failure() }}
-      run: |
-        cd .project-build-logs
-        zip -r wildfly-core-ts-smoke.zip wildfly-core-ts-smoke
-        rm -rf wildfly-core-ts-smoke
-    - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-      with:
-        name: xnio_and_remoting-logs-20201119-210646
-        path: .project-build-logs
-  wildfly-core-ob-ci-end-job:
-    name: wildfly-core-ob-ci-end-job
-    runs-on:
-    - ubuntu-latest
-    if: ${{ always() }}
-    env:
-      OB_VERSION_XNIO: ${{ needs.xnio-build.outputs.version_xnio}}
-      OB_VERSION_JBOSS_REMOTING: ${{ needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-      OB_VERSION_WILDFLY_CORE: ${{ needs.wildfly-core-build.outputs.version_wildfly_core}}
-      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
-      MAVEN_SMOKE_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae
-      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
-        -Dci-cleanup=true -fae -DallTests
-      OB_ARTIFACTS_DIR: .ci-tools/artifacts
-      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
-      OB_PROJECT_VERSION: ${{ needs.wildfly-core-build.outputs.version_wildfly_core
-        }}
-      OB_MAVEN_DEPENDENCY_VERSIONS: -Dversion.org.jboss.xnio=${{needs.xnio-build.outputs.version_xnio}}
-        -Dversion.org.jboss.remoting=${{needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-    needs:
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        repository: wildfly/wildfly-core
-        ref: master
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-        path: .ci-tools
-    - uses: actions/cache@v1
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-maven-
-    - uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-    - id: pre-build
-      uses: kabir/play-action/temp-pre-build@master
-      with:
-        build: 0
-        custom: 1
-    - name: Overlaying downloaded snapshots onto ~/.m2/repository
-      env:
-        TAR_NAME: ${{steps.pre-build.outputs.snapshots-tar}}
-      run: cd ~/.m2/repository && mv ${GITHUB_WORKSPACE}/${TAR_NAME} . && tar xfzv
-        ${TAR_NAME}
-    - uses: actions/checkout@v2
-      with:
-        repository: wildfly/wildfly-s2i
-        path: .maven-repo-generator
-    - run: echo "hello from core" >> ${ARTIFACTS_DIR}/from-core
-    - uses: kabir/play-action/temp-post-build@master
-      with:
-        build: 0
-        custom: 1
-        component: wildfly-core
-        snapshots: .snapshots.tgz
-    - name: Run multi-repo-ci-tool 'copy-logs' command
-      if: ${{ failure() }}
-      run: |
-        java -jar .ci-tools/multi-repo-ci-tool.jar copy-logs . .project-build-logs/wildfly-core-ob-ci-end-job
-    - if: ${{ failure() }}
-      run: |
-        cd .project-build-logs
-        zip -r wildfly-core-ob-ci-end-job.zip wildfly-core-ob-ci-end-job
-        rm -rf wildfly-core-ob-ci-end-job
-    - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-      with:
-        name: xnio_and_remoting-logs-20201119-210646
-        path: .project-build-logs
-  ob-ci-end-job:
-    name: ob-ci-end-job
-    runs-on:
-    - ubuntu-latest
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    - wildfly-core-ob-ci-end-job
-    env:
-      MAVEN_OPTS: -Xmx1g -Xmx1g
-      OB_ARTIFACTS_DIR: artifacts
-      OB_VERSION_WILDFLY_CORE: ${{ needs.wildfly-core-build.outputs.version_wildfly_core}}
-      OB_STATUS_TEXT: artifacts/status-text.txt
-      OB_VERSION_XNIO: ${{ needs.xnio-build.outputs.version_xnio}}
-      OB_VERSION_JBOSS_REMOTING: ${{ needs.jboss-remoting-build.outputs.version_jboss_remoting}}
-      OB_ISSUE_DATA_JSON: issue-data.json
-    steps:
-    - name: Make OB_ARTIFACTS_DIR an absolute path
-      run: |
-        echo "OB_ARTIFACTS_DIR=${GITHUB_WORKSPACE}/${OB_ARTIFACTS_DIR}" >> $GITHUB_ENV
-    - name: Make OB_STATUS_TEXT an absolute path
-      run: |
-        echo "OB_STATUS_TEXT=${GITHUB_WORKSPACE}/${OB_STATUS_TEXT}" >> $GITHUB_ENV
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-    - uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-    - name: Git command-line work
-      run: |
-        TMP=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git fetch origin ${TMP}
-        git rebase origin/${TMP}
-    - run: |
-        mkdir -p ${OB_ARTIFACTS_DIR}
-        touch ${OB_STATUS_TEXT}
-    - name: Add '::1 localhost' to hosts file
-      run: sudo bash -c 'echo ::1 localhost >> /etc/hosts'
-    - name: Run multi-repo-ci-tool 'merge-large-files-in-directory' command
-      run: |
-        java -jar multi-repo-ci-tool.jar merge-large-files-in-directory ${OB_ARTIFACTS_DIR}
-    - name: test
-      run: |-
-        echo hello
-        ls -al ${OB_ARTIFACTS_DIR}
-    - name: Run multi-repo-ci-tool 'split-large-files-in-directory' command
-      run: |
-        java -jar multi-repo-ci-tool.jar split-large-files-in-directory ${OB_ARTIFACTS_DIR}
-    - name: Git command-line work
-      if: ${{ success() }}
-      run: |
-        git config --local user.name "CI Action"
-        git config --local user.email "ci@example.com"
-        git add ${OB_ARTIFACTS_DIR}
-        branch_status=$(git status --porcelain)
-        [[ ! -z "${branch_status}}" ]] && git commit -m "Store any artifacts copied to \${OB_ARTIFACTS_DIR} by ob-ci-end-job" || echo "No changes"
-        TMP=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git fetch origin ${TMP}
-        git rebase origin/${TMP}
-        git push origin ${TMP}
-  ob-ci-read-status-output:
-    name: ob-ci-read-status-output
-    runs-on:
-    - ubuntu-latest
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    - wildfly-core-ob-ci-end-job
-    - ob-ci-end-job
-    if: ${{ always() }}
-    env:
-      OB_STATUS_TEXT: artifacts/status-text.txt
-    outputs:
-      status-output: ${{steps.pre-build.outputs.status-output}}
-    steps:
-    - name: Make OB_STATUS_TEXT an absolute path
-      run: |
-        echo "OB_STATUS_TEXT=${GITHUB_WORKSPACE}/${OB_STATUS_TEXT}" >> $GITHUB_ENV
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-    - name: Git command-line work
-      run: |
-        TMP=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git fetch origin ${TMP}
-        git rebase origin/${TMP}
-    - id: status-output
-      run: |
-        [[ -f "${OB_STATUS_TEXT}" ]] && TMP="$(cat ${OB_STATUS_TEXT})"
-        TMP="${TMP//'%'/'%25'}"
-        TMP="${TMP//$'\n'/'%0A'}"
-        TMP="${TMP//$'\r'/'%0D'}"
-        echo "::set-output name=status-output::${TMP}"
-  ob-ci-status-success:
-    name: Issue Status Report - Success
-    runs-on: ubuntu-latest
-    if: ${{ success() }}
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    - wildfly-core-ob-ci-end-job
-    - ob-ci-end-job
-    - ob-ci-read-status-output
-    env:
-      xnio_build_git_sha: ${{needs.xnio-build.outputs.git-sha}}
-      jboss_remoting_build_git_sha: ${{needs.jboss-remoting-build.outputs.git-sha}}
-      wildfly_core_build_git_sha: ${{needs.wildfly-core-build.outputs.git-sha}}
-      status_output: ${{needs.pre-build.outputs.status-output}}
-    steps:
-    - name: report-status
-      uses: actions/github-script@v3
-      with:
-        github-token: ${{secrets.OB_MULTI_CI_PAT}}
-        script: |-
-          await github.issues.addLabels({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['Passed']
-          })
-          const labelsOnIssueRet = await github.issues.listLabelsOnIssue({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-          })
-          const labelsOnIssue = await github.paginate(labelsOnIssueRet)
-          const labelsToRemoveFromIssue = ['Failure']
-          for (const labelToRemove of labelsToRemoveFromIssue) {
-            console.log('Want to remove label: ' + labelToRemove)
-            for (const label of labelsOnIssue) {
-              console.log('Match ' + label['name'] + '?')
-              if (label['name'] === labelToRemove) {
-                console.log('Removing label ' + label['name'])
-                await github.issues.removeLabel({
-                  issue_number: 1,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label['name']
-                })
-                break;
-              }
-            }
-          }
-          await github.issues.createComment({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'The workflow passed!\n\n'
-            + 'These are the job names and their respective SHA-1 hashes:\n\n'
-            + 'jboss-remoting-build: ' + process.env.jboss_remoting_build_git_sha + '\n'
-            + 'xnio-build: ' + process.env.xnio_build_git_sha + '\n'
-            + 'wildfly-core-build: ' + process.env.wildfly_core_build_git_sha + '\n'
-            + '\n'
-            + process.env.status_output + '\n'
-          ,
-          })
-  ob-ci-status-failure:
-    name: Issue Status Report - Failure
-    runs-on: ubuntu-latest
-    if: ${{ failure() }}
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    - wildfly-core-ob-ci-end-job
-    - ob-ci-end-job
-    - ob-ci-read-status-output
-    - ob-ci-status-success
-    env:
-      xnio_build_git_sha: ${{needs.xnio-build.outputs.git-sha}}
-      jboss_remoting_build_git_sha: ${{needs.jboss-remoting-build.outputs.git-sha}}
-      wildfly_core_build_git_sha: ${{needs.wildfly-core-build.outputs.git-sha}}
-      status_output: ${{needs.pre-build.outputs.status-output}}
-    steps:
-    - name: report-status
-      uses: actions/github-script@v3
-      with:
-        github-token: ${{secrets.OB_MULTI_CI_PAT}}
-        script: |-
-          await github.issues.addLabels({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            labels: ['Failure']
-          })
-          const labelsOnIssueRet = await github.issues.listLabelsOnIssue({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-          })
-          const labelsOnIssue = await github.paginate(labelsOnIssueRet)
-          const labelsToRemoveFromIssue = ['Passed']
-          for (const labelToRemove of labelsToRemoveFromIssue) {
-            console.log('Want to remove label: ' + labelToRemove)
-            for (const label of labelsOnIssue) {
-              console.log('Match ' + label['name'] + '?')
-              if (label['name'] === labelToRemove) {
-                console.log('Removing label ' + label['name'])
-                await github.issues.removeLabel({
-                  issue_number: 1,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label['name']
-                })
-                break;
-              }
-            }
-          }
-          await github.issues.createComment({
-            issue_number: 1,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'The workflow failed.\n\n'
-            + 'These are the job names and their respective SHA-1 hashes:\n\n'
-            + 'jboss-remoting-build: ' + process.env.jboss_remoting_build_git_sha + '\n'
-            + 'xnio-build: ' + process.env.xnio_build_git_sha + '\n'
-            + 'wildfly-core-build: ' + process.env.wildfly_core_build_git_sha + '\n'
-            + '\n'
-            + process.env.status_output + '\n'
-          ,
-          })
-  ob-ci-cleanup:
-    name: ob-ci-cleanup
-    runs-on: ubuntu-latest
-    needs:
-    - cancel-previous-runs
-    - xnio-build
-    - jboss-remoting-build
-    - wildfly-core-build
-    - wildfly-core-ts-smoke
-    - wildfly-core-ob-ci-end-job
-    - ob-ci-end-job
-    - ob-ci-read-status-output
-    - ob-ci-status-success
-    - ob-ci-status-failure
-    if: ${{ always() }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ci-branch-1
-        path: .ci-tools
-    - name: Git command-line work
-      working-directory: .ci-tools
-      run: |
-        TMP=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git push origin :${TMP}
