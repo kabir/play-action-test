@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 20 19:26:56 UTC 2020
+xnio-nio-3.8.2.Final-SNAPSHOT.jar>=
+xnio-nio-3.8.2.Final-SNAPSHOT-sources.jar>=
+xnio-nio-3.8.2.Final-SNAPSHOT.pom>=
