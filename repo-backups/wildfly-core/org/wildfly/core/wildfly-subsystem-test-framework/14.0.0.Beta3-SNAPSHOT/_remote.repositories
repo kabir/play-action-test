@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu Nov 19 18:18:35 UTC 2020
+wildfly-subsystem-test-framework-14.0.0.Beta3-SNAPSHOT.pom>=
+wildfly-subsystem-test-framework-14.0.0.Beta3-SNAPSHOT-sources.jar>=
+wildfly-subsystem-test-framework-14.0.0.Beta3-SNAPSHOT.jar>=

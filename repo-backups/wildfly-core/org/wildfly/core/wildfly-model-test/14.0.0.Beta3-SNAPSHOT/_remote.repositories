@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu Nov 19 18:18:04 UTC 2020
+wildfly-model-test-14.0.0.Beta3-SNAPSHOT.jar>=
+wildfly-model-test-14.0.0.Beta3-SNAPSHOT.pom>=
+wildfly-model-test-14.0.0.Beta3-SNAPSHOT-sources.jar>=

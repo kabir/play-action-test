@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 20 19:29:23 UTC 2020
+wildfly-protocol-14.0.0.Beta3-SNAPSHOT-sources.jar>=
+wildfly-protocol-14.0.0.Beta3-SNAPSHOT.pom>=
+wildfly-protocol-14.0.0.Beta3-SNAPSHOT.jar>=

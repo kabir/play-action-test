@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu Nov 19 18:19:21 UTC 2020
+wildfly-event-logger-14.0.0.Beta3-SNAPSHOT.pom>=
+wildfly-event-logger-14.0.0.Beta3-SNAPSHOT-sources.jar>=
+wildfly-event-logger-14.0.0.Beta3-SNAPSHOT.jar>=

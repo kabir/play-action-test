@@ -1,0 +1,8 @@
+d89fd7d33c431c87b4d80d606234a5bb7cd16b3a3eb60daca2124e34b1399716,/org/jboss/jboss-parent/24.0.0.redhat-1/jboss-parent-24.0.0.redhat-1.pom
+8e2f8cfb4376eb2d27f83d756723eb3e8b0a03c375b5f9e652de01115c4ee320,/org/jboss/jboss-parent/37/jboss-parent-37.pom
+13fcf2fbfc2beb75bd5eb25a409738615891b7eddcd31b5980030336b4766e36,/org/picketbox/picketbox-parent/5.0.3.Final-redhat-00007/picketbox-parent-5.0.3.Final-redhat-00007.pom
+01e25417b4acdeb9e7ad0c129b0562972897f8a7e6c20d1cf2c94b60c22215d7,/org/picketbox/picketbox/5.0.3.Final-redhat-00007/picketbox-5.0.3.Final-redhat-00007.jar
+20f086f4ee09ee095a034bd70902e4b7e7987a98f588296bc816d98315d8e7ab,/org/picketbox/picketbox/5.0.3.Final-redhat-00007/picketbox-5.0.3.Final-redhat-00007.pom
+177b13265bc49523db46920aa1d09239465a4d3e171da789120cd5a07c4e19d9,/org/wildfly/core/wildfly-core-feature-pack-parent/14.0.0.Beta3-SNAPSHOT/wildfly-core-feature-pack-parent-14.0.0.Beta3-SNAPSHOT.pom
+13aacf34bb982ea98e208db8669a574ea3f587e7634cdab3f8ddd7013d7cbfa1,/org/wildfly/core/wildfly-core-galleon-pack/14.0.0.Beta3-SNAPSHOT/wildfly-core-galleon-pack-14.0.0.Beta3-SNAPSHOT.pom
+7f34960374a08ae6e731a1ab8b0c0135ded284a4fa80f42fa4323bf81c5d0b1b,/org/wildfly/core/wildfly-core-parent/14.0.0.Beta3-SNAPSHOT/wildfly-core-parent-14.0.0.Beta3-SNAPSHOT.pom

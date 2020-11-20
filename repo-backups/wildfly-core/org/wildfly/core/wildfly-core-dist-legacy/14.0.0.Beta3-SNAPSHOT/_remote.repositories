@@ -1,0 +1,7 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Thu Nov 19 18:21:11 UTC 2020
+wildfly-core-dist-legacy-14.0.0.Beta3-SNAPSHOT.tar.gz>=
+wildfly-core-dist-legacy-14.0.0.Beta3-SNAPSHOT.pom>=
+wildfly-core-dist-legacy-14.0.0.Beta3-SNAPSHOT-src.zip>=
+wildfly-core-dist-legacy-14.0.0.Beta3-SNAPSHOT.zip>=
+wildfly-core-dist-legacy-14.0.0.Beta3-SNAPSHOT-src.tar.gz>=
