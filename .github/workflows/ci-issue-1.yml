@@ -49,7 +49,7 @@ jobs:
       with:
         build: 1
         custom: 0
-        workflow-end-job: 0
+        end: 0
     - name: Build with Maven
       run: 'mvn -B install -DskipTests '
     - name: Mount ~/.m2/repository to .m2-repo-mount since the actions can't access
@@ -60,7 +60,7 @@ jobs:
         build: 1
         custom: 0
         component: xnio
-        workflow-end-job: 0
+        end: 0
     - name: Unmount .m2-repo-mount
       run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
     - name: Run multi-repo-ci-tool 'copy-logs' command
@@ -75,7 +75,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201120-174544
+        name: xnio_and_remoting-logs-20201120-192220
         path: .project-build-logs
   jboss-remoting-build:
     name: jboss-remoting
@@ -115,7 +115,7 @@ jobs:
       with:
         build: 1
         custom: 0
-        workflow-end-job: 0
+        end: 0
     - name: Build with Maven
       run: mvn -B install -DskipTests -Dxnio.version=${OB_VERSION_XNIO}
     - uses: kabir/play-action/temp-post-build@master
@@ -123,7 +123,7 @@ jobs:
         build: 1
         custom: 0
         component: jboss-remoting
-        workflow-end-job: 0
+        end: 0
     - name: Unmount .m2-repo-mount
       run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
     - name: Run multi-repo-ci-tool 'copy-logs' command
@@ -138,7 +138,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201120-174544
+        name: xnio_and_remoting-logs-20201120-192220
         path: .project-build-logs
   wildfly-core-build:
     name: wildfly-core-build
@@ -189,7 +189,7 @@ jobs:
       with:
         build: 1
         custom: 1
-        workflow-end-job: 0
+        end: 0
     - name: Maven Build
       run: |
         mvn -B install ${MAVEN_TEST_PARAMS} ${MAVEN_BUILD_EXTRA_PARAMS} -pl controller -am -Dversion.org.jboss.xnio=${OB_VERSION_XNIO} -Dversion.org.jboss.remoting=${OB_VERSION_JBOSS_REMOTING}
@@ -199,7 +199,7 @@ jobs:
         build: 1
         custom: 1
         component: wildfly-core
-        workflow-end-job: 0
+        end: 0
     - name: Unmount .m2-repo-mount
       run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
     - name: Run multi-repo-ci-tool 'copy-logs' command
@@ -214,7 +214,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201120-174544
+        name: xnio_and_remoting-logs-20201120-192220
         path: .project-build-logs
   wildfly-core-ob-ci-end-job:
     name: wildfly-core-ob-ci-end-job
@@ -265,7 +265,7 @@ jobs:
       with:
         build: 0
         custom: 1
-        workflow-end-job: 0
+        end: 0
     - uses: actions/checkout@v2
       with:
         repository: wildfly/wildfly-s2i
@@ -277,7 +277,7 @@ jobs:
         build: 0
         custom: 1
         component: wildfly-core
-        workflow-end-job: 0
+        end: 0
     - name: Run multi-repo-ci-tool 'copy-logs' command
       if: ${{ failure() }}
       run: |
@@ -290,7 +290,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
       with:
-        name: xnio_and_remoting-logs-20201120-174544
+        name: xnio_and_remoting-logs-20201120-192220
         path: .project-build-logs
   ob-ci-end-job:
     name: ob-ci-end-job
@@ -322,7 +322,7 @@ jobs:
       with:
         build: 0
         custom: 0
-        workflow-end-job: 1
+        end: 1
     - name: test
       run: |-
         echo hello
@@ -334,8 +334,4 @@ jobs:
         build: 0
         custom: 0
         component: end-job
-        workflow-end-job: 1
-
-
-
-
+        end: 1
