@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Nov 20 19:28:05 UTC 2020
+jboss-remoting-5.0.19.Final-SNAPSHOT.jar>=
+jboss-remoting-5.0.19.Final-SNAPSHOT.pom>=
+jboss-remoting-5.0.19.Final-SNAPSHOT-sources.jar>=
