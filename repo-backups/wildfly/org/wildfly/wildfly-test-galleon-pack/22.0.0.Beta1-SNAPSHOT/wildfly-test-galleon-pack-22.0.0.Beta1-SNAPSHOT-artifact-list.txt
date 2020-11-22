@@ -1,0 +1,9 @@
+8e2f8cfb4376eb2d27f83d756723eb3e8b0a03c375b5f9e652de01115c4ee320,/org/jboss/jboss-parent/37/jboss-parent-37.pom
+232405b6d8bd609c697de68cfc355e9c9c8edf03268375e82422e1a798e07829,/org/wildfly/core/wildfly-core-feature-pack-parent/14.0.0.Beta2/wildfly-core-feature-pack-parent-14.0.0.Beta2.pom
+4bbefaf2c55c1ce00e2d0feae0c755253070ecf81b859df5659d9c20d8e4cff8,/org/wildfly/core/wildfly-core-galleon-pack/14.0.0.Beta2/wildfly-core-galleon-pack-14.0.0.Beta2.pom
+5bbc7a5f6ecd3ae54c85e2f209ea1060b26133ceb4e142659cc9062dc7783a2a,/org/wildfly/core/wildfly-core-parent/14.0.0.Beta2/wildfly-core-parent-14.0.0.Beta2.pom
+c39530e2208333e60e2f6565243d560d1e6fb6c72eeaae13e876ab7a8f20acff,/org/wildfly/wildfly-ee-feature-pack-parent/22.0.0.Beta1-SNAPSHOT/wildfly-ee-feature-pack-parent-22.0.0.Beta1-SNAPSHOT.pom
+542c76740f5b4b7ee5b01cf2eb0fd5d03f1a31e08596e64a8c1d6785e6eaab5a,/org/wildfly/wildfly-ee-galleon-pack/22.0.0.Beta1-SNAPSHOT/wildfly-ee-galleon-pack-22.0.0.Beta1-SNAPSHOT.pom
+2a1ef832003ffd25b516c73f5fb317b8821ddba2c62d625f5a8c59e6612028bf,/org/wildfly/wildfly-parent/22.0.0.Beta1-SNAPSHOT/wildfly-parent-22.0.0.Beta1-SNAPSHOT.pom
+6840d941e372368a23a798f82476ef52d3d3b3929856021ef94bd8f166a38057,/org/wildfly/wildfly-servlet-feature-pack-parent/22.0.0.Beta1-SNAPSHOT/wildfly-servlet-feature-pack-parent-22.0.0.Beta1-SNAPSHOT.pom
+70529bcd5dcb9c6c05721dd0cc0ca2acd6176db1a263d8ab08656091553e422a,/org/wildfly/wildfly-servlet-galleon-pack/22.0.0.Beta1-SNAPSHOT/wildfly-servlet-galleon-pack-22.0.0.Beta1-SNAPSHOT.pom

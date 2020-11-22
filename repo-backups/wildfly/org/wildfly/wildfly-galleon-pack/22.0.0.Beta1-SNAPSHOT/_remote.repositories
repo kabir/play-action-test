@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun Nov 22 13:24:39 UTC 2020
+wildfly-galleon-pack-22.0.0.Beta1-SNAPSHOT.zip>=
+wildfly-galleon-pack-22.0.0.Beta1-SNAPSHOT.pom>=
+wildfly-galleon-pack-22.0.0.Beta1-SNAPSHOT-artifact-list.txt>=
