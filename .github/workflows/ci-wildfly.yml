@@ -128,8 +128,8 @@ jobs:
         build: 0
         custom: 1
         end: 0
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+  #   - name: Setup tmate session
+  #     uses: mxschmitt/action-tmate@v3
     - name: Maven Build
       run: |
         mvn -B ${MAVEN_TEST_BUILD_DEPS} -X
