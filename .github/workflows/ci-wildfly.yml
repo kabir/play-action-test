@@ -1,0 +1,154 @@
+name: XNIO and Remoting
+'on':
+  push:
+    branches: ci-wildfly
+env:
+  MAVEN_OPTS: -Xms756M -Xmx1g
+  OB_ISSUE_ID: 1
+jobs:
+  cancel-previous-runs:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello!!
+#    - uses: actions/checkout@v2
+#      with:
+#        ref: ci-wildfly
+#    - uses: n1hility/cancel-previous-runs@v2
+#      with:
+#        token: ${{ secrets.GITHUB_TOKEN }}
+  wildfly-build:
+    name: wildfly-build
+    runs-on:
+    - ubuntu-latest
+    env:
+      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
+      MAVEN_TEST_BUILD_DEPS: install -pl ee-feature-pack/galleon-feature-pack,galleon-pack,build,dist,ee-dist,ee-build
+        -DskipTests
+      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
+        -Dci-cleanup=true -fae
+      MAVEN_BUILD_EXTRA_PARAMS: -DlegacyBuild -DlegacyRelease -DskipTests
+      OB_ARTIFACTS_DIR: .ci-tools/artifacts
+      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
+      OB_MAVEN_DEPENDENCY_VERSIONS: ''
+    needs:
+    - cancel-previous-runs
+    outputs:
+      git-sha: ${{steps.pre-build.outputs.git-sha}}
+      version_wildfly: ${{steps.pre-build.outputs.version}}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: wildfly/wildfly
+        ref: master
+    - uses: actions/checkout@v2
+      with:
+        ref: ci-wildfly
+        path: .ci-tools
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+    - id: pre-build
+      uses: kabir/play-action/temp-pre-build@master
+      with:
+        build: 1
+        custom: 1
+        end: 0
+    - name: Maven Build
+      run: "mvn -B install ${MAVEN_TEST_PARAMS} ${MAVEN_BUILD_EXTRA_PARAMS} \n"
+    - name: Mount ~/.m2/repository to .m2-repo-mount since the actions can't access
+        ~/.m2 directly
+      run: mkdir .m2-repo-mount && sudo mount --rbind ~/.m2/repository/ .m2-repo-mount
+    - uses: kabir/play-action/temp-post-build@master
+      with:
+        build: 1
+        custom: 1
+        component: wildfly
+        end: 0
+    - name: Unmount .m2-repo-mount
+      run: sudo umount .m2-repo-mount && rmdir .m2-repo-mount
+    - name: Run multi-repo-ci-tool 'copy-logs' command
+      if: ${{ failure() }}
+      run: |
+        java -jar .ci-tools/multi-repo-ci-tool.jar copy-logs . .project-build-logs/wildfly-build
+    - if: ${{ failure() }}
+      run: |
+        cd .project-build-logs
+        zip -r wildfly-build.zip wildfly-build
+        rm -rf wildfly-build
+    - uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: wildfly_only__master_-logs-20201120-203552
+        path: .project-build-logs
+  wildfly-ts-basic:
+    name: wildfly-ts-basic
+    runs-on:
+    - ubuntu-latest
+    env:
+      OB_VERSION_WILDFLY: ${{ needs.wildfly-build.outputs.version_wildfly}}
+      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
+      MAVEN_TEST_BUILD_DEPS: install -pl ee-feature-pack/galleon-feature-pack,galleon-pack,build,dist,ee-dist,ee-build
+        -DskipTests
+      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
+        -Dci-cleanup=true -fae
+      OB_ARTIFACTS_DIR: .ci-tools/artifacts
+      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
+      OB_PROJECT_VERSION: ${{ needs.wildfly-build.outputs.version_wildfly }}
+      OB_MAVEN_DEPENDENCY_VERSIONS: ''
+    needs:
+    - wildfly-build
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: wildfly/wildfly
+        ref: master
+    - uses: actions/checkout@v2
+      with:
+        ref: ci-wildfly
+        path: .ci-tools
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+    - name: Mount ~/.m2/repository to .m2-repo-mount since the actions can't access
+        ~/.m2 directly
+      run: mkdir .m2-repo-mount && sudo mount --rbind ~/.m2/repository/ .m2-repo-mount
+    - id: pre-build
+      uses: kabir/play-action/temp-pre-build@master
+      with:
+        build: 0
+        custom: 1
+        end: 0
+    - name: Maven Build
+      run: |
+        mvn -B ${MAVEN_TEST_BUILD_DEPS} -X
+        mvn -B package ${MAVEN_IPV4_TEST_PARAMS} -Dts.basic -pl testsuite/integration/basic/ -Dtest=DiscoveryGroupExternalMessagingDeploymentTestCase
+    - uses: kabir/play-action/temp-post-build@master
+      with:
+        build: 0
+        custom: 1
+        component: wildfly
+        end: 0
+    - name: Run multi-repo-ci-tool 'copy-logs' command
+      if: ${{ failure() }}
+      run: |
+        java -jar .ci-tools/multi-repo-ci-tool.jar copy-logs . .project-build-logs/wildfly-ts-basic
+    - if: ${{ failure() }}
+      run: |
+        cd .project-build-logs
+        zip -r wildfly-ts-basic.zip wildfly-ts-basic
+        rm -rf wildfly-ts-basic
+    - uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: wildfly_only__master_-logs-20201120-203552
+        path: .project-build-logs
