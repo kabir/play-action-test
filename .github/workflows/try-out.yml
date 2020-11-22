@@ -1,0 +1,43 @@
+name: Try Out
+'on':
+  push:
+    branches: try-out
+env:
+  MAVEN_OPTS: -Xms756M -Xmx1g
+  OB_ISSUE_ID: 1
+jobs:
+  try-out:
+    runs-on: ubuntu-latest
+    env:
+      OB_ISSUE_DATA_JSON: .ci-tools/issue-data.json
+      MAVEN_TEST_BUILD_DEPS: install -pl ee-feature-pack/galleon-feature-pack,galleon-pack,build,dist,ee-dist,ee-build
+        -DskipTests
+      MAVEN_TEST_PARAMS: -DfailIfNoTests=false -Dipv6 -Djboss.test.transformers.eap
+        -Dci-cleanup=true -fae
+      MAVEN_BUILD_EXTRA_PARAMS: -DlegacyBuild -DlegacyRelease -DskipTests
+      OB_ARTIFACTS_DIR: .ci-tools/artifacts
+      OB_STATUS_TEXT: .ci-tools/artifacts/status-text.txt
+      OB_MAVEN_DEPENDENCY_VERSIONS: ''
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: wildfly/wildfly
+        ref: master
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+    - id: pre-build
+      uses: kabir/play-action/temp-try-out@master
+    - name: Check
+      run: |
+        echo check perms
+        ls -al m2-repo-mount/try-out
+        echo output
+        echo From runner >> .m2-repo-mount/try-out/txt
+        echo contents
+        cat .m2-repo-mount/try-out/txt
